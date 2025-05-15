@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv(dotenv_path='env/.env')
 
 supabase_url = "https://wcuiqirtagmefhrddcbe.supabase.co"
-supabase_key = os.getenv("BREVO_API_KEY")
+supabase_key = os.getenv("SUPABASE_API_KEY")
 
 supabase: Client = create_client(supabase_url, supabase_key)
 
