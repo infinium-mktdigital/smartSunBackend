@@ -85,5 +85,6 @@ def get_users():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    debug = os.getenv("FLASK_DEBUG", "True") == "True"
-    app.run(debug=debug)
+    from dotenv import load_dotenv
+    load_dotenv()
+    app.run(debug=True)
