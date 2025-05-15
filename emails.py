@@ -1,5 +1,6 @@
-import requests
+import requests, os
 from enum import Enum
+from dotenv import load_dotenv
 
 class emailTemplate(Enum):
      FIRST_EMAIL = "htmls/firstEmail.html"
@@ -7,7 +8,8 @@ class emailTemplate(Enum):
      PASSWORD_CHANGED = "htmls/passwordChanged.html"
 
 def variables():
-    apikey = "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"
+    load_dotenv(dotenv_path='env/.env')
+    apikey = os.getenv("BREVO_API_KEY")
     var = {
         "url":"https://api.brevo.com/v3/smtp/email",
         "header": {

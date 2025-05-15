@@ -1,8 +1,11 @@
-import codes, time
+import codes, time, os
 from supabase import create_client, Client
+from dotenv import load_dotenv
+
+load_dotenv(dotenv_path='env/.env')
 
 supabase_url = "https://wcuiqirtagmefhrddcbe.supabase.co"
-supabase_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjdWlxaXJ0YWdtZWZocmRkY2JlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY2NjMxMzAsImV4cCI6MjA2MjIzOTEzMH0.zhGCNmh0pl8DUUJ7ccCytAuFKKpr-sZpaWNtuU285GY"
+supabase_key = os.getenv("BREVO_API_KEY")
 
 supabase: Client = create_client(supabase_url, supabase_key)
 
@@ -34,19 +37,11 @@ def searchUser(email, password):
     return bool(response.data)
 
 def resetPass(email):
-    code = codes.forgetPass()  # Gera um código de 6 dígitos
+    code = codes.forgetPass()
     try:
         response = supabase.table("users").update({"pass_code": code}).eq("email", email).execute()
-        if response.data:  # Verifica se o e-mail foi encontrado e atualizado
+        if response.data:
             return code
-        else:
-            return "E-mail não encontrado"
-    except Exception as e:
-        return str(e)
-
-def deleteResetPass(email):
-    try:
-        supabase.table("users").upsert({"pass_code":""}).eq("email",email).execute()
     except Exception as e:
         return str(e)
     
