@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import database, emails
+import database, emails, os
 
 app = Flask(__name__)
 CORS(app)
@@ -85,4 +85,5 @@ def get_users():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    debug = os.getenv("FLASK_DEBUG", "True") == "True"
+    app.run(debug=debug)
