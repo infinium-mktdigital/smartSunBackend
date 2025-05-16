@@ -49,14 +49,15 @@ def verifyPass(email,code):
     try:
         response = (
             supabase.table("users")
-            .select("code")
+            .select("pass_code")
             .eq("email",email)
-            .eq("pass_code",code)
             .execute()
         )
     except Exception as e:
         return str(e)
-    return bool(response.data)
+    if code == response.data[0]['pass_code']:
+        return True
+    return False
 
 def updatePass(email,password):
     senha = codes.sha256(password)
