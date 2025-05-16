@@ -63,7 +63,7 @@ def verifyToken():
 # update a password
 @app.route('/pass/new',methods=["POST"])
 def updatePass():
-    data = request.json()
+    data = request.get_json()
 
     email = data.get("email")
     password = data.get("password")
@@ -85,4 +85,4 @@ def get_users():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)
