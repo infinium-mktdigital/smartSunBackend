@@ -1,9 +1,26 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import database, emails, os
+from functools import wraps
+import database, emails, codes
 
 app = Flask(__name__)
 CORS(app)
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        if 'Authorization' in request.headers:
+            token = request.headers['Authorization'].split(" ")[1]
+
+        if not token:
+            return jsonify({'message': 'Token é obrigatório!'}), 401
+
+        payload = codes.verifyToken(token)
+        if not payload:
+            return jsonify({'message': 'Token inválido ou expirado!'}), 401
+        return f(payload, *args, **kwargs)
+    return decorated
 
 # create user on supabase and send a welcome email
 @app.route('/user',methods=['POST'])
@@ -29,7 +46,8 @@ def login():
 
     response = database.searchUser(email,password)
     if response == True:
-        return jsonify({"message": "Login bem-sucedido"}), 200
+        token = codes.generateToken(email)
+        return jsonify({"token":token}), 200
     else:
         return jsonify({"message": "Credenciais inválidas"}), 404
     
@@ -77,7 +95,8 @@ def updatePass():
 
 # get all users
 @app.route('/users', methods=['GET'])
-def get_users():
+@token_required
+def getUsers(payload):
     try:
         response = database.getAllUsers()
         return jsonify(response.data), 200
