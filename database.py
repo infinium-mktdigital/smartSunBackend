@@ -1,4 +1,4 @@
-import codes, time, os
+import codes, os
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
@@ -20,7 +20,6 @@ def createUser(name, email, password):
     except Exception as e:
         return str(e)
     return response
-
 
 def searchUser(email, password):
     senha = codes.sha256(password)
@@ -78,3 +77,58 @@ def getAllUsers():
         return response
     except Exception as e:
         return str(e)
+
+def getAddress(email):
+    try:
+        response = (
+            supabase.table("address")
+            .select("lat, lon")
+            .eq("fk_email", email)
+            .execute()
+        )
+    except Exception as e:
+        return str(e)
+    return response.data
+
+def saveAddress(email, address):
+    data = address["data"]
+    lat = address["latitude"]
+    lon = address["longitude"]
+    try:
+        response = (
+            supabase.table("address")
+            .insert({"fk_email": email,
+                     "data": data, 
+                     "lat": lat,
+                     "lon": lon})
+            .execute()
+        )
+    except Exception as e:
+        return str(e)
+    return response.data
+
+def getSolar(lat,lon):
+    try:
+        response = (
+            supabase.table("address")
+            .select("solar")
+            .eq("lat", lat)
+            .eq("lon", lon)
+            .execute()
+        )
+    except Exception as e:
+        return str(e)
+    return response.data
+
+def saveSolar(email, solar):
+    try:
+        response = (
+            supabase.table("address")
+            .update({"solar": solar})
+            .eq("fk_email", email)
+            .order("solar", desc=True)
+            .execute()
+        )
+    except Exception as e:
+        return str(e)
+    return response.data

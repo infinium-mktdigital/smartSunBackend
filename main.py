@@ -1,11 +1,12 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from functools import wraps
-import database, emails, codes
+import database, emails, codes, address, solar
 
 app = Flask(__name__)
 CORS(app)
 
+# define a token to authorize authenticated users use the platform
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -100,6 +101,44 @@ def getUsers(payload):
     try:
         response = database.getAllUsers()
         return jsonify(response.data), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# get lat and long with a zipcode
+@app.route('/address/<cep>', methods=['GET'])
+@token_required
+def getAddress(payload,cep):
+
+    email = payload.get('email')
+    request = database.getAddress(email)
+    if request:
+        return jsonify(request), 200
+    try:
+        response = address.searchCep(cep)
+        database.saveAddress(email,response)
+        data = {
+            "lat": response['latitude'],
+            "lon": response['longitude']
+        }
+        return jsonify(data), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# get solar data from lat and long
+@app.route('/solar', methods=['GET'])
+@token_required
+def getSolar(payload):
+    email = payload.get('email')
+    lat = float(request.args.get('lat'))
+    lon = float(request.args.get('lon'))
+    solarData = database.getSolar(lat, lon)
+    response = solarData[0]['solar']
+    if response != None:
+        return jsonify(response), 200
+    try:
+        response = solar.request(lat, lon)
+        database.saveSolar(email, response)
+        return jsonify(response), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
