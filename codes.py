@@ -16,7 +16,7 @@ def forgetPass():
 def generateToken(email):
     payload = {
         'email': email,
-        'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)
+        'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=48)
     }
     token = jwt.encode(payload, os.getenv("SECRET_KEY"), algorithm="HS256")
     return token
