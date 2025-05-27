@@ -114,19 +114,19 @@ def getSolar(lat,lon):
             .select("solar")
             .eq("lat", lat)
             .eq("lon", lon)
+            .order("solar", desc=True)
             .execute()
         )
     except Exception as e:
         return str(e)
     return response.data
 
-def saveSolar(email, solar):
+def saveSolar(lat, lon, solar):
     try:
         response = (
             supabase.table("address")
             .update({"solar": solar})
-            .eq("fk_email", email)
-            .order("solar", desc=True)
+            .eq("lat",str(lat))
             .execute()
         )
     except Exception as e:
