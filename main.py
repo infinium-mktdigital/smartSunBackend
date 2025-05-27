@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from collections import OrderedDict
 from flask_cors import CORS
 from functools import wraps
 import database, emails, codes, address, solar, calc
@@ -119,16 +120,10 @@ def getUser(email):
 def calculateSolar(payload):    
     try:
         data = request.get_json()
-        if not data:
-            return jsonify({"error": "Dados não fornecidos"}), 400
-            
         cep = data.get('cep')
         consumo = data.get('consumo')
         cost = data.get('cost')
-        
-        if not cep or not consumo:
-            return jsonify({"error": "CEP e consumo são obrigatórios"}), 400
-            
+                    
         email = payload.get('email')
         
         stored_address = database.getAddress(email)
@@ -171,12 +166,12 @@ def calculateSolar(payload):
 # return all the calcs from an email
 @app.route('/solar/calculate/<email>', methods=['GET'])
 def getCalc(email):
-    data = dict(data)
-    data['email'] = email
     try:
         response = database.getCalc(email)
-        data['data'] = response.data
-        return jsonify(response.data), 200
+        data = OrderedDict()
+        data['email'] = email
+        data['data'] = response
+        return jsonify(data), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
