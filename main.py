@@ -3,6 +3,7 @@ from collections import OrderedDict
 from flask_cors import CORS
 from functools import wraps
 import database, emails, codes, address, solar, calc
+import ast
 
 app = Flask(__name__)
 CORS(app)
@@ -33,10 +34,15 @@ def create():
     email = data.get('email')
     password = data.get('password')
 
-    response = database.createUser(name,email,password)
+    try:
+        response = database.createUser(name,email,password)
+        data = ast.literal_eval(response)
+        if data['code'] == '23505':
+            return jsonify({"message": "Email já cadastrado"}), 406
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
     emails.sendEmail(email,name,emails.emailTemplate.FIRST_EMAIL)
-
-    return jsonify(response.data)
+    return jsonify(response), 200
 
 # verify if the login credentials are valids
 @app.route('/login',methods=['POST'])
@@ -45,14 +51,17 @@ def login():
 
     email = data.get('email')
     password = data.get('password')
-
-    response = database.searchUser(email,password)
-    if response == True:
-        token = codes.generateToken(email)
-        return jsonify({"token":token}), 200
-    else:
-        return jsonify({"message": "Credenciais inválidas"}), 404
     
+    try:
+        response = database.searchUser(email,password)
+        if response == True:
+            token = codes.generateToken(email)
+        else:
+            return jsonify({"message": "Credenciais inválidas"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    return jsonify({"token":token}), 200
+
 # create a expiration token for pass
 @app.route('/pass/<email>', methods=['GET'])
 def forgetPass(email):
