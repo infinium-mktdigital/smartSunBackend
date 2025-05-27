@@ -104,7 +104,16 @@ def getUsers(payload):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# return all the calcs
+# get a specific user by email
+@app.route('/user/<email>', methods=['GET'])
+def getUser(email):
+    try:
+        response = database.getUser(email)
+        return jsonify(response.data), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# make a calc for the seller
 @app.route('/solar/calculate', methods=['POST'])
 @token_required
 def calculateSolar(payload):    
@@ -150,6 +159,7 @@ def calculateSolar(payload):
             return jsonify({"error": "Dados de irradiância solar não encontrados"}), 500
             
         panel_calculation = calc.calcular_sistema_solar(consumo,solar_irradiance,cost)
+        database.saveCalc(email, panel_calculation)
         
         return jsonify(panel_calculation), 200
         
@@ -157,6 +167,18 @@ def calculateSolar(payload):
         return jsonify({"error": f"Erro de validação: {str(e)}"}), 400
     except Exception as e:
         return jsonify({"error": f"Erro interno: {str(e)}"}), 500
+
+# return all the calcs from an email
+@app.route('/solar/calculate/<email>', methods=['GET'])
+def getCalc(email):
+    data = dict(data)
+    data['email'] = email
+    try:
+        response = database.getCalc(email)
+        data['data'] = response.data
+        return jsonify(response.data), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
