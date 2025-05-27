@@ -104,7 +104,7 @@ def saveAddress(email, address):
     try:
         response = (
             supabase.table("address")
-            .insert({"fk_email": email,
+            .upsert({"fk_email": email,
                      "data": data, 
                      "lat": lat,
                      "lon": lon})
@@ -157,7 +157,7 @@ def getCalc(email):
     try:
         response = (
             supabase.table("calcs")
-            .select("calc")
+            .select("id, calc, created_at")
             .eq("fk_email", email)
             .execute()
         )
