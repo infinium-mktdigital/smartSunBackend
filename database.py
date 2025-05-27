@@ -77,6 +77,13 @@ def getAllUsers():
         return response
     except Exception as e:
         return str(e)
+    
+def getUser(email):
+    try:
+        response = supabase.table("users").select("*").eq("email", email).execute()
+        return response
+    except Exception as e:
+        return str(e)
 
 def getAddress(email):
     try:
@@ -127,6 +134,31 @@ def saveSolar(lat, lon, solar):
             supabase.table("address")
             .update({"solar": solar})
             .eq("lat",str(lat))
+            .eq("lon", str(lon))
+            .execute()
+        )
+    except Exception as e:
+        return str(e)
+    return response.data
+
+def saveCalc(email, calc):
+    try:
+        response = (
+            supabase.table("calcs")
+            .insert({"fk_email": email,
+                     "calc": calc})
+            .execute()
+        )
+    except Exception as e:
+        return str(e)
+    return response.data
+
+def getCalc(email):
+    try:
+        response = (
+            supabase.table("calcs")
+            .select("calc")
+            .eq("fk_email", email)
             .execute()
         )
     except Exception as e:

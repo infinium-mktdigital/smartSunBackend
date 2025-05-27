@@ -28,9 +28,13 @@ def variables():
 def sendEmail(email, name, emailType: emailTemplate, code=None):
     try:
         var = variables()
-        subject = "Redefinição de Senha - Smart Sun"
+        if emailTemplate.FIRST_EMAIL:
+            subject = "Seja bem-vindo(a) - Smart Sun"
+        elif emailTemplate.FORGET_PASSWORD:
+            subject = "Redefinição de Senha - Smart Sun"
+        else:
+            subject = "Senha Alterada - Smart Sun"
 
-        # Use um nome padrão se o nome não for fornecido
         if not name:
             name = "Usuário"
 
