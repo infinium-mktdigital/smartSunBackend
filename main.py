@@ -135,16 +135,11 @@ def calculateSolar(payload):
                     
         email = payload.get('email')
         
-        stored_address = database.getAddress(email)
-        if stored_address:
-            lat = stored_address[0]['lat']
-            lon = stored_address[0]['lon']
-        else:
-            address_response = address.searchCep(cep)
-            database.saveAddress(email, address_response)
-            lat = address_response['latitude']
-            lon = address_response['longitude']
-        
+        address_response = address.searchCep(cep)
+        database.saveAddress(email, address_response)
+        lat = address_response['latitude']
+        lon = address_response['longitude']
+    
         solar_data = database.getSolar(lat, lon)
         if solar_data and solar_data[0]['solar']:
             solar_response = solar_data[0]['solar']
@@ -177,10 +172,16 @@ def calculateSolar(payload):
 def getCalc(email):
     try:
         response = database.getCalc(email)
-        data = OrderedDict()
-        data['email'] = email
-        data['data'] = response
-        return jsonify(data), 200
+        return jsonify(response), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# return details of a specific calc
+@app.route('/solar/calculate/<identifier>', methods=['GET'])
+def getCalcById(identifier):
+    try:
+        response = database.getCalcDetails(int(identifier))
+        return jsonify(response), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
