@@ -177,7 +177,7 @@ def getCalc(email):
         return jsonify({"error": str(e)}), 500
 
 # return details of a specific calc
-@app.route('/solar/calculate/<identifier>', methods=['GET'])
+@app.route('/solar/details/<identifier>', methods=['GET'])
 def getCalcById(identifier):
     try:
         response = database.getCalcDetails(int(identifier))
