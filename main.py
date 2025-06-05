@@ -1,5 +1,4 @@
 from flask import Flask, request, jsonify
-from collections import OrderedDict
 from flask_cors import CORS
 from functools import wraps
 import database, emails, codes, address, solar, calc
@@ -35,14 +34,22 @@ def create():
     password = data.get('password')
 
     try:
-        response = database.createUser(name,email,password)
-        data = ast.literal_eval(response)
-        if data['code'] == '23505':
-            return jsonify({"message": "Email já cadastrado"}), 406
+        response = database.createUser(name,email,password)        
+        if isinstance(response, str):
+            response_dict = ast.literal_eval(response)
+            if response_dict.get('code') == '23505':
+                return jsonify({"message": "Email já cadastrado"}), 406
+            else:
+                return jsonify({"error": response_dict.get('message', 'Erro desconhecido')}), 500
+            
+        emails.sendEmail(email,name,emails.emailTemplate.FIRST_EMAIL)
+        if hasattr(response, 'data'):
+            return jsonify(response.data), 200
+        else:
+            return jsonify({"message": "Usuário criado com sucesso"}), 200
+        
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    emails.sendEmail(email,name,emails.emailTemplate.FIRST_EMAIL)
-    return jsonify(response), 200
 
 # verify if the login credentials are valids
 @app.route('/login',methods=['POST'])
